@@ -6,10 +6,10 @@ Publish all collision elements within a SDF file as MoveIt CollisionObjects
 import argparse
 import os
 try:
-  from pyassimp import pyassimp
+    from pyassimp import pyassimp
 except:
-  # support pyassimp > 3.0
-  import pyassimp
+    # support pyassimp > 3.0
+    import pyassimp
 
 from pyassimp.errors import AssimpError
 import os.path
@@ -24,12 +24,13 @@ from tf.transformations import *
 import pysdf
 from gazebo2rviz import *
 
+
 class Sdf2moveit(object):
+
     def __init__(self):
         self.ignored_submodels = []
         self.collision_objects = {}
         self.collision_objects_updated = {}
-
 
         self.planning_scene_pub = rospy.Publisher('/planning_scene', PlanningScene, queue_size=10)
         while self.planning_scene_pub.get_num_connections() < 1:
@@ -45,7 +46,8 @@ class Sdf2moveit(object):
         self.get_planning_scene = rospy.ServiceProxy('/get_planning_scene', GetPlanningScene)
         self.request = PlanningSceneComponents(components=PlanningSceneComponents.WORLD_OBJECT_NAMES)
 
-    # Slightly modified PlanningSceneInterface.__make_mesh from moveit_commander/src/moveit_commander/planning_scene_interface.py
+    # Slightly modified PlanningSceneInterface.__make_mesh from
+    # moveit_commander/src/moveit_commander/planning_scene_interface.py
     def make_mesh(self, co, pose, filename, scale=(1.0, 1.0, 1.0)):
         try:
             scene = pyassimp.load(filename)
@@ -112,7 +114,8 @@ class Sdf2moveit(object):
 
         for linkpart in linkparts:
             if linkpart.geometry_type not in supported_geometry_types:
-                print("Element %s with geometry type %s not supported. Ignored." % (full_linkname, linkpart.geometry_type))
+                print("Element {} with geometry type {}} not supported. Ignored.".format(full_linkname,
+                                                                                         linkpart.geometry_type))
                 continue
 
             if linkpart.geometry_type == 'mesh':
@@ -176,7 +179,7 @@ class Sdf2moveit(object):
     def update_collision_object(self, link, full_linkname, **kwargs):
         if 'name' in kwargs:
             modelinstance_name = kwargs['name']
-    
+
         full_linkname_mod = modelinstance_name + "::" + full_linkname.split("::")[1]
         link_root = pysdf.sdf2tfname(full_linkname_mod)
         self.collision_objects_updated[link_root] = CollisionObject()
@@ -184,13 +187,15 @@ class Sdf2moveit(object):
         self.collision_objects_updated[link_root].operation = CollisionObject.MOVE
         if 'pose' in kwargs:
             updated_pose = kwargs['pose']
-            self.move_collision_object(self.collision_objects_updated[link_root], self.collision_objects[link_root], updated_pose)
+            self.move_collision_object(self.collision_objects_updated[
+                                       link_root], self.collision_objects[link_root], updated_pose)
 
     def move_collision_object(self, sink_collision_object, source_collision_object, updated_pose):
         link_world = pysdf.pose_msg2homogeneous(updated_pose)
         for pose in source_collision_object.primitive_poses:
             primitive_pose_in_link = pysdf.pose_msg2homogeneous(pose)
-            primitive_pose_in_world = pysdf.homogeneous2pose_msg(concatenate_matrices(link_world, primitive_pose_in_link))
+            primitive_pose_in_world = pysdf.homogeneous2pose_msg(
+                concatenate_matrices(link_world, primitive_pose_in_link))
             sink_collision_object.primitive_poses.extend([primitive_pose_in_world])
         for pose in source_collision_object.mesh_poses:
             mesh_pose_in_link = pysdf.pose_msg2homogeneous(pose)
@@ -202,7 +207,11 @@ class Sdf2moveit(object):
             sink_collision_object.plane_poses.extend([plane_pose_in_world])
 
     def add_new_collision_object(self, model_name, modelinstance_name):
-        sdf = pysdf.SDF(model=model_name)
+        # Allow to load an object loaded from an "external" file
+        if model_name.endswith(".sdf"):
+            sdf = pysdf.SDF(file=model_name)
+        else:
+            sdf = pysdf.SDF(model=model_name)
         num_collision_objects = len(self.collision_objects)
         model = sdf.world.models[0] if len(sdf.world.models) >= 1 else None
         if model:
@@ -228,6 +237,9 @@ class Sdf2moveit(object):
     def delete_collision_object(self, modelinstance_name):
         for id in [object.id for key, object in self.collision_objects_updated.items() if modelinstance_name in key.lower()]:
             del self.collision_objects_updated[id]
+            # If we do delete the object corresponding to this id in the collision objects attribute, then we can
+            # delete and respawn the same object with the same name
+            del self.collision_objects[id]
             planning_scene_msg = PlanningScene()
             planning_scene_msg.is_diff = True
             deleted_obj = CollisionObject()
@@ -245,7 +257,7 @@ class Sdf2moveit(object):
 
         response = self.get_planning_scene(self.request)
         current_scene_objects = [object.id for object in response.scene.world.collision_objects]
- 
+
         planning_scene_msg = PlanningScene()
         planning_scene_msg.is_diff = True
         for (collision_object_root, collision_object) in self.collision_objects_updated.iteritems():
