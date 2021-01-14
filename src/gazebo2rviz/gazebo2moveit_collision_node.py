@@ -10,7 +10,7 @@ import argparse
 import rospy
 from tf.transformations import *
 from sdf2moveit_collision_node import Sdf2moveit
-from modular_framework_core.srv import GetGazeboType
+from grip_core.srv import GetGazeboType
 import rosservice
 
 import pysdf
