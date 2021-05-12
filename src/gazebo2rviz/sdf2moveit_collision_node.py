@@ -212,7 +212,7 @@ class Sdf2moveit(object):
                 return None
             planning_scene_msg = PlanningScene()
             planning_scene_msg.is_diff = True
-            for (collision_object_root, collision_object) in self.collision_objects.iteritems():
+            for (collision_object_root, collision_object) in self.collision_objects.items():
                 if collision_object_root in self.ignored_submodels:
                     pass
                 else:
@@ -248,7 +248,7 @@ class Sdf2moveit(object):
  
         planning_scene_msg = PlanningScene()
         planning_scene_msg.is_diff = True
-        for (collision_object_root, collision_object) in self.collision_objects_updated.iteritems():
+        for (collision_object_root, collision_object) in self.collision_objects_updated.items():
             if collision_object_root in current_scene_objects:
                 # Object is present in the planning scene
                 if collision_object_root in self.ignored_submodels:
