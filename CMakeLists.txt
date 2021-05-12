@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(gazebo2rviz)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -11,7 +11,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gazebo2rviz
-  CATKIN_DEPENDS rospy pysdf rospkg
+  CATKIN_DEPENDS rospy pysdf python3-rospkg
 #  DEPENDS system_lib
 )
 
@@ -28,11 +28,11 @@ include_directories(
 ## Install ##
 #############
 install(PROGRAMS
-  scripts/gazebo2tf_node.py
-  scripts/gazebo2marker_node.py
-  scripts/sdf2marker_node.py
-  scripts/sdf2tfstatic_node.py
-  scripts/sdf2extract_tfstatic_node.py
+  src/gazebo2rviz/gazebo2tf_node.py
+  src/gazebo2rviz/gazebo2marker_node.py
+  src/gazebo2rviz/sdf2marker_node.py
+  src/gazebo2rviz/sdf2tfstatic_node.py
+  src/gazebo2rviz/sdf2extract_tfstatic_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
