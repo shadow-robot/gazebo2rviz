@@ -176,7 +176,7 @@ class Sdf2moveit(object):
     def update_collision_object(self, link, full_linkname, **kwargs):
         if 'name' in kwargs:
             modelinstance_name = kwargs['name']
-    
+
         full_linkname_mod = modelinstance_name + "::" + full_linkname.split("::")[1]
         link_root = pysdf.sdf2tfname(full_linkname_mod)
         self.collision_objects_updated[link_root] = CollisionObject()
@@ -202,7 +202,11 @@ class Sdf2moveit(object):
             sink_collision_object.plane_poses.extend([plane_pose_in_world])
 
     def add_new_collision_object(self, model_name, modelinstance_name):
-        sdf = pysdf.SDF(model=model_name)
+        # Allow the user to load an object loaded from an "external" file
+        if model_name.endswith(".sdf"):
+            sdf = pysdf.SDF(file=model_name)
+        else:
+            sdf = pysdf.SDF(model=model_name)
         num_collision_objects = len(self.collision_objects)
         model = sdf.world.models[0] if len(sdf.world.models) >= 1 else None
         if model:
@@ -228,6 +232,9 @@ class Sdf2moveit(object):
     def delete_collision_object(self, modelinstance_name):
         for id in [object.id for key, object in self.collision_objects_updated.items() if modelinstance_name in key.lower()]:
             del self.collision_objects_updated[id]
+            # If we do delete the object corresponding to this id in the collision objects attribute, then we can
+            # delete and respawn the same object with the same name
+            del self.collision_objects[id]
             planning_scene_msg = PlanningScene()
             planning_scene_msg.is_diff = True
             deleted_obj = CollisionObject()
@@ -245,7 +252,7 @@ class Sdf2moveit(object):
 
         response = self.get_planning_scene(self.request)
         current_scene_objects = [object.id for object in response.scene.world.collision_objects]
- 
+
         planning_scene_msg = PlanningScene()
         planning_scene_msg.is_diff = True
         for (collision_object_root, collision_object) in self.collision_objects_updated.items():
