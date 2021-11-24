@@ -29,7 +29,7 @@ class Sdf2moveit(object):
         self.ignored_submodels = []
         self.collision_objects = {}
         self.collision_objects_updated = {}
-
+        self.ignored_robot_model = []
 
         self.planning_scene_pub = rospy.Publisher('/planning_scene', PlanningScene, queue_size=10)
         while self.planning_scene_pub.get_num_connections() < 1:
@@ -44,6 +44,9 @@ class Sdf2moveit(object):
         rospy.loginfo('/get_planning_scene service has been advertised, proceeding.')
         self.get_planning_scene = rospy.ServiceProxy('/get_planning_scene', GetPlanningScene)
         self.request = PlanningSceneComponents(components=PlanningSceneComponents.WORLD_OBJECT_NAMES)
+
+        self.ignored_robot_model = rospy.get_param('~ignore_robot_model', '').split(';')
+        rospy.loginfo('Ignoring robot models of: %s' % self.ignored_robot_model)
 
     # Slightly modified PlanningSceneInterface.__make_mesh from moveit_commander/src/moveit_commander/planning_scene_interface.py
     def make_mesh(self, co, pose, filename, scale=(1.0, 1.0, 1.0)):
@@ -222,7 +225,8 @@ class Sdf2moveit(object):
             rospy.loginfo('Loaded model: %s' % modelinstance_name)
             return model
         else:
-            rospy.logerr('Unable to load model: %s' % model_name)
+            if model_name not in self.ignored_robot_model:
+                rospy.logerr('Unable to load model: %s' % model_name)
             return None
 
     def delete_collision_object(self, modelinstance_name):
