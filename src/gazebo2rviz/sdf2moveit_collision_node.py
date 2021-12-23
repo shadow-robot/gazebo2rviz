@@ -260,6 +260,11 @@ class Sdf2moveit(object):
                 else:
                     planning_scene_msg.world.collision_objects.append(collision_object)
                     planning_scene_msg.world.collision_objects[-1].header.frame_id = 'world'
+                    if(len(collision_object.primitive_poses)>0):
+                        planning_scene_msg.world.collision_objects[-1].pose = collision_object.primitive_poses[0]
+                    elif(len(collision_object.mesh_poses)>0):
+                        planning_scene_msg.world.collision_objects[-1].pose = collision_object.mesh_poses[0]
+        print(planning_scene_msg)
         self.planning_scene_pub.publish(planning_scene_msg)
 
 
