@@ -35,7 +35,13 @@ def on_model_states_msg(model_states_msg):
  
         if not modelinstance_name in model_cache:
             # Add new collision object
-            model_cache[modelinstance_name] = sdf2moveit.add_new_collision_object(model_name, modelinstance_name)
+            new_model = sdf2moveit.add_new_collision_object(model_name, modelinstance_name)
+            # Only add the model to the cache if it was successfully loaded
+            if new_model is not None:
+                model_cache[modelinstance_name] = new_model
+            else:
+                continue
+            
  
         # Move existing object
         model = model_cache[modelinstance_name]

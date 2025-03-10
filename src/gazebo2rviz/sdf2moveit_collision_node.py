@@ -205,6 +205,8 @@ class Sdf2moveit(object):
             sink_collision_object.plane_poses.extend([plane_pose_in_world])
 
     def add_new_collision_object(self, model_name, modelinstance_name):
+        if model_name in self.ignored_robot_model:
+            return None
         sdf = pysdf.SDF(model=model_name)
         num_collision_objects = len(self.collision_objects)
         model = sdf.world.models[0] if len(sdf.world.models) >= 1 else None
@@ -229,8 +231,7 @@ class Sdf2moveit(object):
             rospy.loginfo('Loaded model: %s' % modelinstance_name)
             return model
         else:
-            if model_name not in self.ignored_robot_model:
-                rospy.logerr('Unable to load model: %s' % model_name)
+            rospy.logerr('Unable to load model: %s' % model_name)
             return None
 
     def delete_collision_object(self, modelinstance_name):
