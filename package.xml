@@ -14,6 +14,7 @@
   <run_depend>pysdf</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>python3-rospkg</run_depend>
+  <run_depend>python3-pyassimp</run_depend>
 
   <export>
   </export>
